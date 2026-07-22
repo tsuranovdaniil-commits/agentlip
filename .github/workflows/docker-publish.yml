@@ -22,7 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: tsdanlip/agentlip
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/agentlip
           tags: |
             type=raw,value=latest
             type=sha,format=short
