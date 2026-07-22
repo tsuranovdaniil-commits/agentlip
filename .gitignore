@@ -1,0 +1,15 @@
+# Environment variables & secrets
+.env
+*.env
+access.md
+
+# Logs & temp
+*.log
+tmp/
+temp/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
