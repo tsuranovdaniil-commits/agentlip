@@ -1,45 +1,61 @@
-name: Build and Push Docker Images
+name: Build and Push Docker Images to GHCR
 
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  # github.repository returns "owner/repo" (e.g., tsuranovdaniil-commits/agentlip)
+  IMAGE_NAME_GLOBAL: ${{ github.repository }}-global
+  IMAGE_NAME_LOCAL: ${{ github.repository }}-local
+
 jobs:
   build-and-push-global:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Global Server
         uses: docker/build-push-action@v5
         with:
           context: ./global_server
           push: true
-          tags: tsdanlip/agentlip-global:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_GLOBAL }}:latest
 
   build-and-push-local:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Local Agent
         uses: docker/build-push-action@v5
         with:
           context: ./local_agent
           push: true
-          tags: tsdanlip/agentlip-local:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOCAL }}:latest
