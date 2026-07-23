@@ -1,33 +1,50 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import httpx
 import os
 
 app = FastAPI(title="Local Agent API")
 
 MINISTRY_ID = os.environ.get("MINISTRY_ID", "unknown")
+GLOBAL_BROKER_URL = os.environ.get("GLOBAL_BROKER_URL", "http://global_broker:8000")
 
-class AccessRequestFromBroker(BaseModel):
-    requester: str
-    document_id: str
+class AgentSyncRequest(BaseModel):
+    text: str
+    is_secret: bool
 
-@app.post("/ask_leader_for_access")
-async def ask_leader_for_access(req: AccessRequestFromBroker):
+class AgentSearchRequest(BaseModel):
+    query: str
+
+@app.post("/agent/sync")
+async def agent_sync(req: AgentSyncRequest):
     """
-    Принимает запрос от Глобального Брокера.
-    В реальной системе здесь агент пишет руководителю в чат (OpenClaw) и ждет ответа (Human-in-the-Loop).
-    Для прототипа имитируем логику: даем разовый доступ.
+    OpenClaw агент (ИИ) вызывает этот метод для сохранения информации.
+    API обогащает запрос токеном министерства и шлет в Глобальный Брокер.
     """
-    print(f"[{MINISTRY_ID.upper()} AGENT] ВНИМАНИЕ РУКОВОДИТЕЛЮ:")
-    print(f"[{MINISTRY_ID.upper()} AGENT] Министерство {req.requester} запрашивает доступ к нашему документу {req.document_id}.")
-    
-    # Имитация ответа руководителя: "разрешить разовый доступ"
-    print(f"[{MINISTRY_ID.upper()} LEADER] Разрешаю разовый доступ.")
-    
-    # В реальной системе здесь бы доставался реальный зашифрованный вектор из локального Qdrant
-    mock_document_content = "Секретные данные, расшифрованные специально для " + req.requester
-    
-    return {
-        "status": "approved",
-        "access_type": "one-time",
-        "data": mock_document_content
-    }
+    async with httpx.AsyncClient() as client:
+        payload = {
+            "text": req.text,
+            "ministry_id": MINISTRY_ID,
+            "is_secret": req.is_secret
+        }
+        try:
+            resp = await client.post(f"{GLOBAL_BROKER_URL}/upload", json=payload)
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Broker connection failed: {e}")
+
+@app.post("/agent/search")
+async def agent_search(req: AgentSearchRequest):
+    """
+    OpenClaw агент вызывает этот метод для поиска информации по всей федеративной сети.
+    """
+    async with httpx.AsyncClient() as client:
+        payload = {
+            "query": req.query,
+            "ministry_id": MINISTRY_ID
+        }
+        try:
+            resp = await client.post(f"{GLOBAL_BROKER_URL}/search", json=payload)
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Broker connection failed: {e}")

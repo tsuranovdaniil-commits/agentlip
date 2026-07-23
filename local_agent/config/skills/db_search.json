@@ -1,0 +1,16 @@
+{
+  "name": "db_search",
+  "description": "Поиск релевантной информации по всей федеративной сети знаний министерств (как в публичной базе, так и в своей секретной).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Поисковый запрос или текст, для которого нужно найти контекст."
+      }
+    },
+    "required": ["query"]
+  },
+  "url": "http://local_agent_api:8000/agent/search",
+  "method": "POST"
+}

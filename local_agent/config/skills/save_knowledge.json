@@ -1,0 +1,20 @@
+{
+  "name": "save_knowledge",
+  "description": "Сохранить проанализированную информацию или документ в векторную базу данных.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string",
+        "description": "Текст документа или факта, который нужно сохранить."
+      },
+      "is_secret": {
+        "type": "boolean",
+        "description": "Если true, данные сохраняются в изолированную секретную коллекцию министерства. Если false, данные публикуются в глобальную публичную сеть для всех агентов."
+      }
+    },
+    "required": ["text", "is_secret"]
+  },
+  "url": "http://local_agent_api:8000/agent/sync",
+  "method": "POST"
+}
