@@ -1,0 +1,39 @@
+services:
+  local_qdrant:
+    image: qdrant/qdrant:latest
+    container_name: local_qdrant
+    restart: unless-stopped
+    ports:
+      - "6334:6333"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+
+  local_agent_api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: local_agent_api
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      - MINISTRY_ID=min_example
+      - GLOBAL_BROKER_URL=http://global_broker:8000 # В реальном деплое здесь будет публичный IP
+    depends_on:
+      - local_qdrant
+
+  local_openclaw:
+    image: openclaw/openclaw:latest
+    container_name: local_openclaw
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Порт UI/API OpenClaw (если применимо)
+    environment:
+      - QDRANT_URL=http://local_qdrant:6333
+      - AGENT_API_URL=http://local_agent_api:8000
+      # Сюда можно добавить токены к OpenAI/Mistral или другие настройки OpenClaw
+    volumes:
+      - ./config:/app/config # Проброс папки с навыками (skills) и промптами в OpenClaw
+    depends_on:
+      - local_qdrant
+      - local_agent_api
