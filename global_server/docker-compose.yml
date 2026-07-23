@@ -1,0 +1,22 @@
+services:
+  global_qdrant:
+    image: qdrant/qdrant:latest
+    container_name: global_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+
+  global_broker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: global_broker
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - QDRANT_URL=http://global_qdrant:6333
+    depends_on:
+      - global_qdrant

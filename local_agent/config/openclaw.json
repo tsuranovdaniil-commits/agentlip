@@ -1,0 +1,35 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/root/.openclaw/workspace",
+      "model": {
+        "primary": "openai/cifra48/agent"
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "loopback"
+  },
+  "memory": {
+    "backend": "qmd"
+  },
+  "models": {
+    "providers": {
+      "openai": {
+        "baseUrl": "https://bridge-back.admlr.lipetsk.ru/api/v1",
+        "apiKey": "${LIPETSK_API_KEY}",
+        "models": [
+          {
+            "id": "cifra48/agent",
+            "name": "cifra48",
+            "reasoning": false,
+            "contextWindow": 1000000,
+            "maxTokens": 16384
+          }
+        ]
+      }
+    }
+  }
+}

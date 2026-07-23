@@ -2,6 +2,12 @@
 .env
 *.env
 access.md
+config/openclaw.json
+
+# Databases & data
+qdrant_data/
+data/
+DockerHUB.txt
 
 # Logs & temp
 *.log
